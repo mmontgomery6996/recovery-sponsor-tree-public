@@ -170,6 +170,7 @@ button,input,select { font:inherit; }
   width:max-content;
   min-width:100%;
   justify-content:flex-start;
+  direction:rtl;
   padding-left:18px;
   padding-right:18px;
 }
@@ -184,6 +185,7 @@ li:last-child:before { border-right:2px solid var(--line); border-radius:0 5px 0
 li:first-child:after { border-radius:5px 0 0 0; }
 ul ul:before { content:''; position:absolute; top:0; left:50%; border-left:2px solid var(--line); height:20px; }
 .card {
+  direction:ltr;
   min-width:145px;
   max-width:180px;
   background:var(--card);
@@ -307,6 +309,31 @@ const parentById=Object.fromEntries(
   DATA.people.filter(p=>p.sponsor_id).map(p=>[p.id,p.sponsor_id])
 );
 
+
+function scrollTreeToRight() {
+  const tree = document.getElementById("tree");
+
+  requestAnimationFrame(() => {
+    tree.scrollLeft = tree.scrollWidth;
+  });
+}
+
+function scrollToRichard() {
+  const rootNode = document.getElementById("n-" + DATA.root);
+
+  scrollTreeToRight();
+
+  requestAnimationFrame(() => {
+    if (rootNode) {
+      rootNode.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+        inline: "end"
+      });
+    }
+  });
+}
+
 function enterSite() {
   document.getElementById("splash").classList.add("hide");
 }
@@ -343,6 +370,7 @@ function node(id) {
 document.getElementById("tree").innerHTML='<ul>'+node(DATA.root)+'</ul>';
 populateBranchDropdown();
 collapseAll();
+scrollToRichard();
 
 function clearBranchFilter() {
   document.querySelectorAll(".branch-hidden").forEach(el=>el.classList.remove("branch-hidden"));
@@ -403,13 +431,18 @@ function expandAll() {
   document.querySelectorAll(".hidden").forEach(x=>x.classList.remove("hidden"));
   document.getElementById("branchSelect").value="";
   document.getElementById("viewLabel").textContent="Expanded full tree";
+  scrollTreeToRight();
 }
 
 function collapseAll() {
+  clearBranchFilter();
   document.querySelectorAll("#tree li").forEach(x=>{
     if(x.querySelector(":scope > ul")) x.classList.add("hidden");
   });
   document.getElementById("n-"+DATA.root).classList.remove("hidden");
+  document.getElementById("branchSelect").value="";
+  document.getElementById("viewLabel").textContent="Collapsed to Richard M.";
+  scrollToRichard();
 }
 
 function searchName() {
