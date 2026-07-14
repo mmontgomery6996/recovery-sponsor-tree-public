@@ -100,18 +100,19 @@ button,input,select { font:inherit; }
   overflow-y:auto;
   background:linear-gradient(180deg,var(--panel),#081b73);
   color:#fff;
-  padding:22px 16px;
+  padding:18px 0;
   box-shadow:4px 0 16px rgba(0,0,0,.15);
   z-index:30;
 }
 .brand {
+  padding:0 12px;
   font-size:1.28rem;
   line-height:1.15;
   font-weight:800;
   margin-bottom:22px;
 }
 .menu-label {
-  margin:16px 4px 7px;
+  margin:16px 12px 7px;
   font-size:.75rem;
   text-transform:uppercase;
   letter-spacing:.1em;
@@ -119,6 +120,9 @@ button,input,select { font:inherit; }
 }
 .control {
   width:100%;
+  border-radius:0;
+  border-left:0;
+  border-right:0;
   min-height:46px;
   margin-bottom:8px;
   padding:10px 12px;
@@ -137,7 +141,9 @@ button,input,select { font:inherit; }
 }
 .sidebar input,
 .sidebar select {
-  width:100%;
+  width:calc(100% - 24px);
+  margin-left:12px;
+  margin-right:12px;
   min-height:46px;
   margin-bottom:8px;
   padding:10px 11px;
@@ -222,7 +228,7 @@ iframe { width:100%; height:100%; border:0; display:block; flex:1 1 auto; min-he
     position:relative;
     height:auto;
     overflow:visible;
-    padding:14px;
+    padding:0;
   }
   .brand { margin-bottom:12px; }
   .sidebar-controls {
@@ -231,7 +237,8 @@ iframe { width:100%; height:100%; border:0; display:block; flex:1 1 auto; min-he
     gap:8px;
   }
   .menu-label { grid-column:1/-1; margin-top:8px; }
-  .control,.sidebar input,.sidebar select { margin:0; text-align:center; }
+  .control { margin:0; text-align:left; padding-left:14px; }
+  .sidebar input,.sidebar select { text-align:left; }
   .sidebar input,.sidebar select { grid-column:1/-1; }
   .content { padding:14px 10px 30px; }
   .content-header { align-items:flex-start; }
@@ -249,30 +256,69 @@ iframe { width:100%; height:100%; border:0; display:block; flex:1 1 auto; min-he
   .view-label { margin-top:4px; }
 }
 
-.tree-placeholder {
+
+
+.vertical-branch {
+  width: 100%;
+  max-width: 760px;
+  margin: 0;
+  padding: 8px 0 40px;
+}
+
+.vertical-lineage {
+  margin: 0;
+  padding: 0;
+}
+
+.vertical-node {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.vertical-card {
+  display: block;
+  width: max-content;
+  max-width: calc(100vw - 40px);
+  margin: 6px 0;
+  padding: 10px 12px;
+  border: 2px solid #5b6f82;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 2px 7px rgba(0,0,0,.08);
+}
+
+.vertical-card .name {
+  font-weight: 700;
+}
+
+.vertical-card .date {
+  font-size: 13px;
+  color: #555;
+  margin-top: 3px;
+}
+
+.vertical-children {
+  margin: 0;
+  padding-left: 28px;
+  border-left: 2px solid var(--line);
+}
+
+.vertical-children > .vertical-node {
+  position: relative;
+}
+
+.vertical-children > .vertical-node::before {
+  content: "";
+  position: absolute;
+  left: -28px;
+  top: 26px;
+  width: 22px;
+  border-top: 2px solid var(--line);
+}
+
+.blank-tree {
   min-height: 55vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-.tree-placeholder button {
-  border: 0;
-  background: transparent;
-  color: var(--brand);
-  font-size: clamp(2rem, 7vw, 5rem);
-  font-weight: 800;
-  letter-spacing: .08em;
-  cursor: pointer;
-  padding: 24px;
-  text-shadow: 0 3px 14px rgba(18,56,199,.18);
-}
-
-.tree-placeholder button:hover,
-.tree-placeholder button:focus {
-  transform: scale(1.03);
-  outline: none;
 }
 
 @media print {
@@ -318,10 +364,7 @@ iframe { width:100%; height:100%; border:0; display:block; flex:1 1 auto; min-he
   </aside>
 
   <main class="content">
-    <div class="content-header">
-      <h1>Tree</h1>
-      <div id="viewLabel" class="view-label">Collapsed full tree</div>
-    </div>
+    <div id="viewLabel" class="view-label"></div>
     <div id="tree" class="tree"></div>
   </main>
 </div>
@@ -401,7 +444,7 @@ function node(id) {
 
 const TREE_HTML = '<ul>'+node(DATA.root)+'</ul>';
 populateBranchDropdown();
-showTreePlaceholder();
+showBlankTree();
 
 
 function renderTree() {
@@ -412,98 +455,97 @@ function renderTree() {
   }
 }
 
-function showTreePlaceholder() {
+function showBlankTree() {
   const tree = document.getElementById("tree");
-
-  tree.innerHTML = `
-    <div class="tree-placeholder">
-      <button type="button" onclick="openRichard()">
-        NMW FAMILY TREE
-      </button>
-    </div>
-  `;
-
+  tree.innerHTML = '<div class="blank-tree"></div>';
   document.getElementById("viewLabel").textContent = "";
   document.getElementById("branchSelect").value = "";
 }
 
-function openRichard() {
-  renderTree();
 
-  document.querySelectorAll("#tree li").forEach(node => {
-    if (node.querySelector(":scope > ul")) {
-      node.classList.add("hidden");
-    }
-  });
-
-  const rootNode = document.getElementById("n-" + DATA.root);
-
-  if (rootNode) {
-    rootNode.classList.remove("hidden");
-  }
-
-  document.getElementById("viewLabel").textContent = "Richard M.";
-  scrollToRichard();
-}
 
 function clearBranchFilter() {
   document.querySelectorAll(".branch-hidden").forEach(el=>el.classList.remove("branch-hidden"));
 }
 
 
-function showBranch() {
-  renderTree();
-  const id=document.getElementById("branchSelect").value;
-  clearBranchFilter();
+function renderVerticalSubtree(id) {
+  const person = byId[id];
+  const kids = DATA.children[id] || [];
 
-  document.querySelectorAll("#tree li").forEach(node => {
-    if (node.querySelector(":scope > ul")) {
-      node.classList.add("hidden");
-    }
-  });
+  let html = `
+    <li class="vertical-node">
+      <div class="vertical-card">
+        <div class="name">${person.name}</div>
+        <div class="date">Clean: ${person.clean_date}</div>
+      </div>
+  `;
 
-  const rootNode = document.getElementById("n-" + DATA.root);
-  if (rootNode) {
-    rootNode.classList.remove("hidden");
+  if (kids.length) {
+    html += '<ul class="vertical-children">';
+    html += kids.map(renderVerticalSubtree).join("");
+    html += "</ul>";
   }
 
-  if(!id) {
-    showTreePlaceholder();
+  html += "</li>";
+  return html;
+}
+
+function showBranch() {
+  const id = document.getElementById("branchSelect").value;
+
+  if (!id) {
+    showBlankTree();
     return;
   }
 
-  const path=[];
-  let current=id;
-  while(current) {
+  const path = [];
+  let current = id;
+
+  while (current) {
     path.unshift(current);
-    current=parentById[current];
+    current = parentById[current];
   }
 
-  for(let i=0;i<path.length-1;i++) {
-    const ancestorId=path[i];
-    const keepChildId=path[i+1];
-    const ancestorNode=document.getElementById("n-"+ancestorId);
-    if(!ancestorNode) continue;
+  let html = '<div class="vertical-branch"><ul class="vertical-lineage">';
 
-    ancestorNode.classList.remove("hidden");
-    const directChildList=ancestorNode.querySelector(":scope > ul");
+  for (let i = 0; i < path.length; i++) {
+    const person = byId[path[i]];
+    const isSelected = i === path.length - 1;
 
-    if(directChildList) {
-      [...directChildList.children].forEach(childLi=>{
-        if(childLi.id!=="n-"+keepChildId) {
-          childLi.classList.add("branch-hidden");
-        }
-      });
+    html += `
+      <li class="vertical-node">
+        <div class="vertical-card">
+          <div class="name">${person.name}</div>
+          <div class="date">Clean: ${person.clean_date}</div>
+        </div>
+    `;
+
+    if (!isSelected) {
+      html += '<ul class="vertical-children">';
+    } else {
+      const kids = DATA.children[id] || [];
+      if (kids.length) {
+        html += '<ul class="vertical-children">';
+        html += kids.map(renderVerticalSubtree).join("");
+        html += "</ul>";
+      }
     }
   }
 
-  const selectedNode=document.getElementById("n-"+id);
-  if(selectedNode) {
-    selectedNode.querySelectorAll(".hidden").forEach(el=>el.classList.remove("hidden"));
-    selectedNode.classList.remove("hidden");
-    document.getElementById("viewLabel").textContent=byId[id].name+" branch";
-    requestAnimationFrame(()=>selectedNode.scrollIntoView({behavior:"smooth",block:"start",inline:"center"}));
+  for (let i = 0; i < path.length; i++) {
+    if (i < path.length - 1) {
+      html += "</ul>";
+    }
+    html += "</li>";
   }
+
+  html += "</ul></div>";
+
+  document.getElementById("tree").innerHTML = html;
+  document.getElementById("viewLabel").textContent = "";
+  document.getElementById("tree").scrollLeft = 0;
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function toggle(e,id) {
@@ -521,7 +563,7 @@ function expandAll() {
 }
 
 function collapseAll() {
-  showTreePlaceholder();
+  showBlankTree();
 }
 
 function searchName() {
@@ -537,7 +579,7 @@ function searchName() {
         li.classList.remove("hidden");
         li=li.parentElement?.closest("li");
       }
-      c.scrollIntoView({behavior:"smooth",block:"center",inline:"center"});
+      c.scrollIntoView({behavior:"smooth",block:"center",inline:"start"});
       document.getElementById("viewLabel").textContent="Search result";
     }
   });
