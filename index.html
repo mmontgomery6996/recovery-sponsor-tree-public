@@ -130,6 +130,11 @@ button,input,select { font:inherit; }
   cursor:pointer;
 }
 .control:hover { background:rgba(255,255,255,.16); }
+.control {
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
+}
 .sidebar input,
 .sidebar select {
   width:100%;
@@ -243,6 +248,33 @@ iframe { width:100%; height:100%; border:0; display:block; flex:1 1 auto; min-he
   .content-header { display:block; }
   .view-label { margin-top:4px; }
 }
+
+.tree-placeholder {
+  min-height: 55vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.tree-placeholder button {
+  border: 0;
+  background: transparent;
+  color: var(--brand);
+  font-size: clamp(2rem, 7vw, 5rem);
+  font-weight: 800;
+  letter-spacing: .08em;
+  cursor: pointer;
+  padding: 24px;
+  text-shadow: 0 3px 14px rgba(18,56,199,.18);
+}
+
+.tree-placeholder button:hover,
+.tree-placeholder button:focus {
+  transform: scale(1.03);
+  outline: none;
+}
+
 @media print {
   #splash,.sidebar,.modal { display:none!important; }
   #app { display:block; }
@@ -266,9 +298,9 @@ iframe { width:100%; height:100%; border:0; display:block; flex:1 1 auto; min-he
     <div class="brand">No Matter What<br>Family Tree</div>
     <div class="sidebar-controls">
       <div class="menu-label">Members</div>
-      <button class="control" onclick="openForm('add')">Add Member</button>
-      <button class="control" onclick="openForm('update')">Update Member</button>
-      <button class="control" onclick="openForm('lists')">Request Lists</button>
+      <button id="addMemberBtn" class="control" type="button">Add Member</button>
+      <button id="updateMemberBtn" class="control" type="button">Update Member</button>
+      <button id="requestListsBtn" class="control" type="button">Request Lists</button>
 
       <div class="menu-label">Branch</div>
       <select id="branchSelect" onchange="showBranch()">
@@ -279,8 +311,8 @@ iframe { width:100%; height:100%; border:0; display:block; flex:1 1 auto; min-he
       <input id="q" placeholder="Search name" oninput="searchName()">
 
       <div class="menu-label">Tree</div>
-      <button class="control" onclick="expandAll()">Expand Tree</button>
-      <button class="control" onclick="collapseAll()">Collapse Tree</button>
+      <button id="expandTreeBtn" class="control" type="button">Expand Tree</button>
+      <button id="collapseTreeBtn" class="control" type="button">Collapse Tree</button>
       <button class="control" onclick="window.print()">Print / Save PDF</button>
     </div>
   </aside>
@@ -367,10 +399,52 @@ function node(id) {
   return s+'</li>';
 }
 
-document.getElementById("tree").innerHTML='<ul>'+node(DATA.root)+'</ul>';
+const TREE_HTML = '<ul>'+node(DATA.root)+'</ul>';
 populateBranchDropdown();
-collapseAll();
-scrollToRichard();
+showTreePlaceholder();
+
+
+function renderTree() {
+  const tree = document.getElementById("tree");
+
+  if (!tree.querySelector("#n-" + DATA.root)) {
+    tree.innerHTML = TREE_HTML;
+  }
+}
+
+function showTreePlaceholder() {
+  const tree = document.getElementById("tree");
+
+  tree.innerHTML = `
+    <div class="tree-placeholder">
+      <button type="button" onclick="openRichard()">
+        NMW FAMILY TREE
+      </button>
+    </div>
+  `;
+
+  document.getElementById("viewLabel").textContent = "";
+  document.getElementById("branchSelect").value = "";
+}
+
+function openRichard() {
+  renderTree();
+
+  document.querySelectorAll("#tree li").forEach(node => {
+    if (node.querySelector(":scope > ul")) {
+      node.classList.add("hidden");
+    }
+  });
+
+  const rootNode = document.getElementById("n-" + DATA.root);
+
+  if (rootNode) {
+    rootNode.classList.remove("hidden");
+  }
+
+  document.getElementById("viewLabel").textContent = "Richard M.";
+  scrollToRichard();
+}
 
 function clearBranchFilter() {
   document.querySelectorAll(".branch-hidden").forEach(el=>el.classList.remove("branch-hidden"));
@@ -378,12 +452,23 @@ function clearBranchFilter() {
 
 
 function showBranch() {
+  renderTree();
   const id=document.getElementById("branchSelect").value;
   clearBranchFilter();
-  collapseAll();
+
+  document.querySelectorAll("#tree li").forEach(node => {
+    if (node.querySelector(":scope > ul")) {
+      node.classList.add("hidden");
+    }
+  });
+
+  const rootNode = document.getElementById("n-" + DATA.root);
+  if (rootNode) {
+    rootNode.classList.remove("hidden");
+  }
 
   if(!id) {
-    document.getElementById("viewLabel").textContent="Collapsed full tree";
+    showTreePlaceholder();
     return;
   }
 
@@ -427,6 +512,7 @@ function toggle(e,id) {
 }
 
 function expandAll() {
+  renderTree();
   clearBranchFilter();
   document.querySelectorAll(".hidden").forEach(x=>x.classList.remove("hidden"));
   document.getElementById("branchSelect").value="";
@@ -435,18 +521,12 @@ function expandAll() {
 }
 
 function collapseAll() {
-  clearBranchFilter();
-  document.querySelectorAll("#tree li").forEach(x=>{
-    if(x.querySelector(":scope > ul")) x.classList.add("hidden");
-  });
-  document.getElementById("n-"+DATA.root).classList.remove("hidden");
-  document.getElementById("branchSelect").value="";
-  document.getElementById("viewLabel").textContent="Collapsed to Richard M.";
-  scrollToRichard();
+  showTreePlaceholder();
 }
 
 function searchName() {
   const q=document.getElementById("q").value.trim().toLowerCase();
+  if(q) renderTree();
   document.querySelectorAll(".card").forEach(c=>{
     c.classList.remove("hit");
     if(q&&c.dataset.name.includes(q)) {
@@ -464,19 +544,37 @@ function searchName() {
 }
 
 function openForm(mode) {
-  if(FORM_WEB_APP_URL.includes("PASTE_GOOGLE")) {
+  if (!FORM_WEB_APP_URL || FORM_WEB_APP_URL.includes("PASTE_GOOGLE")) {
     alert("The form web app URL has not been configured.");
     return;
   }
-  document.getElementById("formFrame").src=
-    FORM_WEB_APP_URL+"?mode="+encodeURIComponent(mode)+"&t="+Date.now();
-  document.getElementById("formModal").classList.add("open");
+
+  const modal = document.getElementById("formModal");
+  const frame = document.getElementById("formFrame");
+
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
+
+  frame.src =
+    FORM_WEB_APP_URL +
+    "?mode=" +
+    encodeURIComponent(mode) +
+    "&t=" +
+    Date.now();
 }
 
 function closeForm() {
-  document.getElementById("formModal").classList.remove("open");
-  document.getElementById("formFrame").src="about:blank";
+  const modal = document.getElementById("formModal");
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden", "true");
+  document.getElementById("formFrame").src = "about:blank";
 }
+
+document.getElementById("addMemberBtn").addEventListener("click", () => openForm("add"));
+document.getElementById("updateMemberBtn").addEventListener("click", () => openForm("update"));
+document.getElementById("requestListsBtn").addEventListener("click", () => openForm("lists"));
+document.getElementById("expandTreeBtn").addEventListener("click", expandAll);
+document.getElementById("collapseTreeBtn").addEventListener("click", collapseAll);
 
 document.getElementById("formModal").addEventListener("click",e=>{
   if(e.target.id==="formModal") closeForm();
