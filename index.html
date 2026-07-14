@@ -2,17 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover">
 <title>No Matter What Family Tree</title>
 <style>
 :root {
-  --brand:#2f5d50;
-  --brand2:#3d6e60;
+  --brand:#1238c7;
+  --brand2:#1b46d8;
   --line:#9aa6a0;
   --card:#fff;
   --bg:#f4f4f2;
-  --panel:#173a31;
-  --panel2:#245448;
+  --panel:#1238c7;
+  --panel2:#1b46d8;
 }
 * { box-sizing:border-box; }
 html,body { margin:0; width:100%; min-height:100%; font-family:Arial,sans-serif; background:var(--bg); color:#222; }
@@ -28,7 +28,7 @@ button,input,select { font:inherit; }
   justify-content:center;
   overflow:hidden;
   background:
-    radial-gradient(circle at center, #315f52 0%, #173a31 58%, #0d241e 100%);
+    radial-gradient(circle at center, #2149d8 0%, #1238c7 58%, #081b73 100%);
   transition:opacity .55s ease, visibility .55s ease;
 }
 #splash.hide {
@@ -98,7 +98,7 @@ button,input,select { font:inherit; }
   top:0;
   height:100vh;
   overflow-y:auto;
-  background:linear-gradient(180deg,var(--panel),#102a23);
+  background:linear-gradient(180deg,var(--panel),#081b73);
   color:#fff;
   padding:22px 16px;
   box-shadow:4px 0 16px rgba(0,0,0,.15);
@@ -164,7 +164,7 @@ button,input,select { font:inherit; }
   padding:20px 10px 60px;
   -webkit-overflow-scrolling:touch;
   overscroll-behavior-x:contain;
-  touch-action:pan-x pan-y;
+  touch-action:pan-x pan-y pinch-zoom;
 }
 .tree > ul {
   width:max-content;
@@ -277,9 +277,8 @@ iframe { width:100%; height:100%; border:0; display:block; flex:1 1 auto; min-he
       <input id="q" placeholder="Search name" oninput="searchName()">
 
       <div class="menu-label">Tree</div>
-      <button class="control" onclick="showFullTree()">Show Full Tree</button>
-      <button class="control" onclick="expandAll()">Expand All</button>
-      <button class="control" onclick="collapseAll()">Collapse All</button>
+      <button class="control" onclick="expandAll()">Expand Tree</button>
+      <button class="control" onclick="collapseAll()">Collapse Tree</button>
       <button class="control" onclick="window.print()">Print / Save PDF</button>
     </div>
   </aside>
@@ -349,12 +348,6 @@ function clearBranchFilter() {
   document.querySelectorAll(".branch-hidden").forEach(el=>el.classList.remove("branch-hidden"));
 }
 
-function showFullTree() {
-  clearBranchFilter();
-  document.getElementById("branchSelect").value="";
-  collapseAll();
-  document.getElementById("viewLabel").textContent="Collapsed full tree";
-}
 
 function showBranch() {
   const id=document.getElementById("branchSelect").value;
