@@ -86,7 +86,7 @@
   autocomplete="off"
   oninput="filterBranchSponsors()"
 >
-<select id="branchSelect" onchange="showBranch()">
+<select id="branchSelect">
   <option value="">Select Branch Sponsor</option>
 </select><div class="label">Search Name</div><input id="searchBox" placeholder="Search name" oninput="searchTree()"><div class="label">Connections</div><div style="padding:0 14px 12px;font-size:.78rem;line-height:1.35;color:rgba(255,255,255,.82)">Each sponsor branch has its own line color.</div><div class="label">Tree</div><button class="tile" onclick="expandTree()">Expand Tree</button><button class="tile" onclick="collapseTree()">Collapse Tree</button><button class="tile" onclick="window.print()">Print / Save PDF</button></aside><main class="main">
       <div id="workspace" class="workspace">
@@ -813,9 +813,11 @@ function renderBranchOptions(list){
 }
 
 function filterBranchSponsors(){
+  const input=
+    document.getElementById("branchFilter");
+
   const query=
-    document.getElementById("branchFilter")
-      .value
+    input.value
       .trim()
       .toLowerCase();
 
@@ -830,13 +832,61 @@ function filterBranchSponsors(){
 
   renderBranchOptions(filtered);
 
+  const select=
+    document.getElementById("branchSelect");
+
   if(filtered.length===1){
-    document.getElementById("branchSelect").value=
-      filtered[0].id;
+    select.value=filtered[0].id;
+
+    window.clearTimeout(
+      filterBranchSponsors.openTimer
+    );
+
+    filterBranchSponsors.openTimer=
+      window.setTimeout(function(){
+        showBranch();
+      },180);
   }
 }
 
+function bindBranchSponsorControls(){
+  const select=
+    document.getElementById("branchSelect");
 
+  const input=
+    document.getElementById("branchFilter");
+
+  select.addEventListener(
+    "change",
+    function(){
+      if(select.value){
+        showBranch();
+      }
+    }
+  );
+
+  input.addEventListener(
+    "keydown",
+    function(event){
+      if(event.key!=="Enter"){
+        return;
+      }
+
+      event.preventDefault();
+
+      const options=[
+        ...select.options
+      ].filter(function(option){
+        return option.value;
+      });
+
+      if(options.length===1){
+        select.value=options[0].value;
+        showBranch();
+      }
+    }
+  );
+}
 
 function openForm(mode){
   collapseTree();
@@ -952,6 +1002,7 @@ window.addEventListener(
   }
 );
 
+bindBranchSponsorControls();
 showQuote(dailyQuoteIndex());
 collapseTree();
 loadCurrentTreeData();
