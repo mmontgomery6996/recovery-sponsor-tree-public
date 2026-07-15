@@ -88,7 +88,15 @@
 >
 <select id="branchSelect">
   <option value="">Select Branch Sponsor</option>
-</select><div class="label">Search Name</div><input id="searchBox" placeholder="Search name" oninput="searchTree()"><div class="label">Connections</div><div style="padding:0 14px 12px;font-size:.78rem;line-height:1.35;color:rgba(255,255,255,.82)">Each sponsor branch has its own line color.</div><div class="label">Tree</div><button class="tile" onclick="expandTree()">Expand Tree</button><button class="tile" onclick="collapseTree()">Collapse Tree</button><button class="tile" onclick="window.print()">Print / Save PDF</button></aside><main class="main">
+</select>
+<button
+  id="openBranchBtn"
+  class="tile"
+  type="button"
+  onclick="showBranch()"
+>
+  Open Branch
+</button><div class="label">Search Name</div><input id="searchBox" placeholder="Search name" oninput="searchTree()"><div class="label">Connections</div><div style="padding:0 14px 12px;font-size:.78rem;line-height:1.35;color:rgba(255,255,255,.82)">Each sponsor branch has its own line color.</div><div class="label">Tree</div><button class="tile" onclick="expandTree()">Expand Tree</button><button class="tile" onclick="collapseTree()">Collapse Tree</button><button class="tile" onclick="window.print()">Print / Save PDF</button></aside><main class="main">
       <div id="workspace" class="workspace">
         <div class="blank"></div>
       </div>
@@ -714,7 +722,9 @@ function showBranch(){
   const id=select.value;
 
   if(!id){
-    collapseTree();
+    document.getElementById("workspace")
+      .innerHTML=
+        '<p style="padding:12px">Select a Branch Sponsor, then tap Open Branch.</p>';
     return;
   }
 
@@ -832,21 +842,12 @@ function filterBranchSponsors(){
 
   renderBranchOptions(filtered);
 
-  const select=
-    document.getElementById("branchSelect");
-
-  if(filtered.length===1){
-    select.value=filtered[0].id;
-
-    window.clearTimeout(
-      filterBranchSponsors.openTimer
-    );
-
-    filterBranchSponsors.openTimer=
-      window.setTimeout(function(){
-        showBranch();
-      },180);
-  }
+  /*
+   * Do not automatically select the only match.
+   * On mobile, tapping an already selected item does not fire
+   * another change event.
+   */
+  document.getElementById("branchSelect").value="";
 }
 
 function bindBranchSponsorControls(){
@@ -882,6 +883,8 @@ function bindBranchSponsorControls(){
 
       if(options.length===1){
         select.value=options[0].value;
+        showBranch();
+      }else if(select.value){
         showBranch();
       }
     }
