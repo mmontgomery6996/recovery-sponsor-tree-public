@@ -134,6 +134,29 @@
 .org-card{min-width:145px;max-width:180px;background:#fff;border:2px solid #5b6f82;border-left:7px solid var(--card-branch-color,#5b6f82);border-radius:12px;padding:10px;display:inline-block;box-shadow:0 2px 7px rgba(0,0,0,.08);cursor:pointer}
 @media(max-width:700px){.view-toggle{display:grid;grid-template-columns:1fr 1fr}.view-button{width:100%}.org-chart{justify-content:flex-start}.org-card{min-width:130px;max-width:145px;padding:8px}}
 
+
+.member-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.summary-card{padding:12px 14px;border:1px solid rgba(18,56,199,.2);border-radius:10px;background:rgba(255,255,255,.78);box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.summary-label{display:block;margin-bottom:4px;font-size:.78rem;color:#667;text-transform:uppercase;letter-spacing:.06em}
+.summary-card strong{font-size:1.25rem;color:#1238c7}
+.descendant-count{display:inline-block;margin-top:6px;padding:2px 7px;border-radius:999px;background:rgba(18,56,199,.1);color:#1238c7;font-size:11px;font-weight:700}
+@media(max-width:700px){.member-summary{grid-template-columns:1fr}}
+
+
+/* Wider desktop form popup */
+@media(min-width:821px){
+  .dialog{
+    width:min(94vw,1120px);
+    max-width:1120px;
+    height:92vh;
+  }
+
+  iframe{
+    width:100%;
+    height:100%;
+  }
+}
+
 </style></head><body>
 <div id="splash"><div class="orbit"><div class="ring"></div><div class="splash-title">NO MATTER WHAT<br>FAMILY TREE</div><button class="enter" onclick="enterSite()">Enter</button></div></div>
 <div id="app"><aside class="sidebar"><div class="brand">No Matter What<br>Family Tree</div><div class="label">Members</div><button class="tile" onclick="openForm('add')">Add Member</button><button class="tile" onclick="openForm('update')">Update Member</button><button class="tile" onclick="openForm('delete')">Delete Member</button><button class="tile" onclick="openForm('lists')">Request Lists</button><div class="label">Branch Sponsor</div>
@@ -155,6 +178,16 @@
 >
   Open Branch
 </button><div class="label">Search Name</div><input id="searchBox" placeholder="Search name" oninput="searchTree()"><div class="label">Connections</div><div style="padding:0 14px 12px;font-size:.78rem;line-height:1.35;color:rgba(255,255,255,.82)">Each sponsor branch has its own line color.</div><div class="label">Tree</div><button class="tile" onclick="expandTree()">Expand Tree</button><button class="tile" onclick="collapseTree()">Collapse Tree</button><button class="tile" onclick="window.print()">Print / Save PDF</button></aside><main class="main">
+      <section class="member-summary" aria-label="Family tree member counts">
+        <div class="summary-card">
+          <span class="summary-label">Total Members</span>
+          <strong id="totalMemberCount">0</strong>
+        </div>
+        <div class="summary-card">
+          <span class="summary-label">Selected Sponsor Branch</span>
+          <strong id="selectedBranchCount">—</strong>
+        </div>
+      </section>
       <div class="view-toggle">
         <button id="verticalViewBtn" class="view-button active" type="button" onclick="setTreeLayout('vertical')">Vertical View</button>
         <button id="horizontalViewBtn" class="view-button" type="button" onclick="setTreeLayout('horizontal')">Horizontal View</button>
@@ -400,6 +433,9 @@ function receiveTreeData(rows){
     );
 
     populateBranches();
+    updateMemberCounters(
+      currentView==="branch" ? currentBranchId : null
+    );
     restoreCurrentViewAfterReload();
   }catch(error){
     showLoadError(
@@ -501,6 +537,39 @@ function colorForSponsor(id){
   ];
 }
 
+
+function descendantCount(id){
+  const children=DATA.children[id]||[];
+  let total=children.length;
+  children.forEach(function(childId){
+    total+=descendantCount(childId);
+  });
+  return total;
+}
+
+function updateMemberCounters(selectedSponsorId){
+  const totalElement=document.getElementById("totalMemberCount");
+  const branchElement=document.getElementById("selectedBranchCount");
+
+  if(totalElement){
+    totalElement.textContent=DATA.people.length;
+  }
+
+  if(!branchElement){
+    return;
+  }
+
+  if(selectedSponsorId && byId[selectedSponsorId]){
+    branchElement.textContent=
+      byId[selectedSponsorId].name+
+      ": "+
+      descendantCount(selectedSponsorId)+
+      " below";
+  }else{
+    branchElement.textContent="—";
+  }
+}
+
 function personCard(
   id,
   hit=false,
@@ -535,6 +604,11 @@ function personCard(
       <div class="date">
         Clean: ${escapeHtml(person.clean_date)}
       </div>
+      ${
+        hasChildren
+          ? `<div class="descendant-count">${descendantCount(id)} connected below</div>`
+          : ""
+      }
     </div>
   `;
 }
@@ -731,6 +805,7 @@ function renderImmediateBranch(
 ){
   currentView="branch";
   currentBranchId=id;
+  updateMemberCounters(id);
 
   const workspace=document.getElementById("workspace");
   workspace.classList.toggle("horizontal-mode",currentTreeLayout==="horizontal");
@@ -773,6 +848,11 @@ function orgCard(id,incomingColor){
   return `<div class="org-card" style="--card-branch-color:${incomingColor||"#5b6f82"}" ${kids.length?`onclick="toggleHorizontalNode(event,'${id}')"`:""}>
     <div class="name">${escapeHtml(p.name)}</div>
     <div class="date">Clean: ${escapeHtml(p.clean_date)}</div>
+    ${
+      kids.length
+        ? `<div class="descendant-count">${descendantCount(id)} connected below</div>`
+        : ""
+    }
   </div>`;
 }
 
@@ -822,6 +902,7 @@ function toggleHorizontalNode(event,id){
 
 function expandTree(){
   currentView="full";
+  updateMemberCounters(null);
   currentBranchId="";
 
   if(!DATA.root){
@@ -838,6 +919,7 @@ function expandTree(){
 
 function collapseTree(){
   currentView="blank";
+  updateMemberCounters(null);
   currentBranchId="";
 
   const workspace=document.getElementById("workspace");
