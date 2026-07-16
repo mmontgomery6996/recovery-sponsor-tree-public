@@ -76,6 +76,64 @@
 }
 
 @media(max-width:820px){#app{display:block}.sidebar{position:relative;height:auto;padding:0}.brand{padding-top:14px}.main{padding:12px 8px 40px}.person{max-width:calc(100vw - 55px);min-width:130px}.outline ul{padding-left:22px}.outline ul>li:before{left:-22px;width:17px}.modal{padding:0}.dialog{width:100vw;max-width:none;height:100dvh;min-height:100vh;border-radius:0}.close{position:fixed;top:max(8px,env(safe-area-inset-top));right:10px}}
+
+/* Mobile form popup sizing */
+@media (max-width: 820px) {
+  .modal {
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .dialog {
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    min-height: 100vh;
+    margin: 0;
+    border-radius: 0;
+    overflow: hidden;
+  }
+
+  .close {
+    position: fixed;
+    top: max(6px, env(safe-area-inset-top));
+    right: 8px;
+    width: 42px;
+    height: 42px;
+    z-index: 3000;
+    border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  }
+
+  iframe {
+    width: 100%;
+    height: 100dvh;
+    min-height: 100vh;
+    padding-top: 50px;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+
+.view-toggle{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.view-button{min-height:42px;padding:9px 14px;border:1px solid #9aa7c7;border-radius:9px;background:#fff;color:#1238c7;font-weight:700;cursor:pointer}
+.view-button.active{background:#1238c7;color:#fff;border-color:#1238c7}
+.workspace.horizontal-mode{overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;padding:18px 8px 60px}
+.org-chart{width:max-content;min-width:100%;display:flex;justify-content:center}
+.org-chart ul{padding-top:24px;position:relative;display:flex;justify-content:center;margin:0;padding-left:0}
+.org-chart li{list-style:none;text-align:center;position:relative;padding:24px 10px 0}
+.org-chart li::before,.org-chart li::after{content:"";position:absolute;top:0;right:50%;border-top:3px solid var(--branch-color,#9aa6a0);width:50%;height:24px}
+.org-chart li::after{right:auto;left:50%;border-left:3px solid var(--branch-color,#9aa6a0)}
+.org-chart li:only-child::before,.org-chart li:only-child::after{display:none}
+.org-chart li:only-child{padding-top:0}
+.org-chart li:first-child::before,.org-chart li:last-child::after{border:0}
+.org-chart li:last-child::before{border-right:3px solid var(--branch-color,#9aa6a0);border-radius:0 7px 0 0}
+.org-chart li:first-child::after{border-radius:7px 0 0 0}
+.org-chart ul ul::before{content:"";position:absolute;top:0;left:50%;border-left:3px solid var(--branch-color,#9aa6a0);height:24px}
+.org-card{min-width:145px;max-width:180px;background:#fff;border:2px solid #5b6f82;border-left:7px solid var(--card-branch-color,#5b6f82);border-radius:12px;padding:10px;display:inline-block;box-shadow:0 2px 7px rgba(0,0,0,.08);cursor:pointer}
+@media(max-width:700px){.view-toggle{display:grid;grid-template-columns:1fr 1fr}.view-button{width:100%}.org-chart{justify-content:flex-start}.org-card{min-width:130px;max-width:145px;padding:8px}}
+
 </style></head><body>
 <div id="splash"><div class="orbit"><div class="ring"></div><div class="splash-title">NO MATTER WHAT<br>FAMILY TREE</div><button class="enter" onclick="enterSite()">Enter</button></div></div>
 <div id="app"><aside class="sidebar"><div class="brand">No Matter What<br>Family Tree</div><div class="label">Members</div><button class="tile" onclick="openForm('add')">Add Member</button><button class="tile" onclick="openForm('update')">Update Member</button><button class="tile" onclick="openForm('delete')">Delete Member</button><button class="tile" onclick="openForm('lists')">Request Lists</button><div class="label">Branch Sponsor</div>
@@ -97,6 +155,10 @@
 >
   Open Branch
 </button><div class="label">Search Name</div><input id="searchBox" placeholder="Search name" oninput="searchTree()"><div class="label">Connections</div><div style="padding:0 14px 12px;font-size:.78rem;line-height:1.35;color:rgba(255,255,255,.82)">Each sponsor branch has its own line color.</div><div class="label">Tree</div><button class="tile" onclick="expandTree()">Expand Tree</button><button class="tile" onclick="collapseTree()">Collapse Tree</button><button class="tile" onclick="window.print()">Print / Save PDF</button></aside><main class="main">
+      <div class="view-toggle">
+        <button id="verticalViewBtn" class="view-button active" type="button" onclick="setTreeLayout('vertical')">Vertical View</button>
+        <button id="horizontalViewBtn" class="view-button" type="button" onclick="setTreeLayout('horizontal')">Horizontal View</button>
+      </div>
       <div id="workspace" class="workspace">
         <div class="blank"></div>
       </div>
@@ -132,6 +194,7 @@ let pendingRefreshAction=null;
 let treeDataDirty=false;
 let allBranchSponsors=[];
 let pendingBranchSponsorName="";
+let currentTreeLayout="vertical";
 
 const BRANCH_COLORS=[
   "#d62828",
@@ -152,7 +215,12 @@ const BRANCH_COLORS=[
 const DAILY_QUOTES=[
   "Don't love what you can't trust. Don't hate what you can't have. Don't say what you can't show. Don't judge what you don't know.",
   "I don't always learn my lesson, but when I do, you can bet I learned it the hard way.",
-  "As with any journey, who you travel with can be more important than your destination."
+  "As with any journey, who you travel with can be more important than your destination.",
+  "True friends are those rare people who come to find you in the dark places and lead you back to the light.",
+  "When you can't look on the bright side, I will sit with you in the dark.",
+  "There are some roads I wish I never went down, but you live and you learn.",
+  "Worry about your character and not your reputation because character is who you are, and your reputation is only what people think of you.",
+  "We are all just walking each other home."
 ];
 
 let displayedQuoteIndex=0;
@@ -609,7 +677,7 @@ function toggleSponsorTile(event,id){
     event.stopPropagation();
   }
 
-  const node=document.getElementById("node-"+id);
+  const node=currentTreeLayout==="horizontal"?document.getElementById("hnode-"+id):document.getElementById("node-"+id);
 
   if(!node || !node.classList.contains("has-children")){
     return;
@@ -664,8 +732,9 @@ function renderImmediateBranch(
   currentView="branch";
   currentBranchId=id;
 
-  document.getElementById("workspace")
-    .innerHTML=branchTree(id,hitSelected);
+  const workspace=document.getElementById("workspace");
+  workspace.classList.toggle("horizontal-mode",currentTreeLayout==="horizontal");
+  workspace.innerHTML=currentTreeLayout==="horizontal"?horizontalBranchTree(id):branchTree(id,hitSelected);
 
   if(scrollToSponsor!==false){
     window.setTimeout(function(){
@@ -683,6 +752,74 @@ function renderImmediateBranch(
   }
 }
 
+
+function setTreeLayout(layout){
+  currentTreeLayout=layout==="horizontal"?"horizontal":"vertical";
+  document.getElementById("verticalViewBtn").classList.toggle("active",currentTreeLayout==="vertical");
+  document.getElementById("horizontalViewBtn").classList.toggle("active",currentTreeLayout==="horizontal");
+
+  if(currentView==="full"){
+    expandTree();
+  }else if(currentView==="branch"&&currentBranchId){
+    renderImmediateBranch(currentBranchId,false);
+  }else{
+    collapseTree();
+  }
+}
+
+function orgCard(id,incomingColor){
+  const p=byId[id];
+  const kids=DATA.children[id]||[];
+  return `<div class="org-card" style="--card-branch-color:${incomingColor||"#5b6f82"}" ${kids.length?`onclick="toggleHorizontalNode(event,'${id}')"`:""}>
+    <div class="name">${escapeHtml(p.name)}</div>
+    <div class="date">Clean: ${escapeHtml(p.clean_date)}</div>
+  </div>`;
+}
+
+function horizontalNode(id,incomingColor="#5b6f82"){
+  const kids=DATA.children[id]||[];
+  const color=colorForSponsor(id);
+  return `<li id="hnode-${id}" class="horizontal-node">${orgCard(id,incomingColor)}${kids.length?`<ul style="--branch-color:${color}">${kids.map(child=>horizontalNode(child,color)).join("")}</ul>`:""}</li>`;
+}
+
+function horizontalFullTree(){
+  return DATA.root?`<div class="org-chart"><ul>${horizontalNode(DATA.root)}</ul></div>`:"";
+}
+
+function horizontalBranchTree(id){
+  const path=pathTo(id);
+  let h='<div class="org-chart"><ul>';
+  for(let i=0;i<path.length;i++){
+    const current=path[i];
+    const parent=i>0?path[i-1]:null;
+    const incoming=parent?colorForSponsor(parent):"#5b6f82";
+    h+=`<li id="hnode-${current}" class="horizontal-node">${orgCard(current,incoming)}`;
+    if(i<path.length-1){
+      h+=`<ul style="--branch-color:${colorForSponsor(current)}">`;
+    }else{
+      const kids=DATA.children[id]||[];
+      if(kids.length){
+        const color=colorForSponsor(id);
+        h+=`<ul style="--branch-color:${color}">${kids.map(child=>horizontalNode(child,color)).join("")}</ul>`;
+      }
+    }
+  }
+  for(let i=0;i<path.length;i++){
+    if(i<path.length-1)h+='</ul>';
+    h+='</li>';
+  }
+  return h+'</ul></div>';
+}
+
+function toggleHorizontalNode(event,id){
+  if(event){event.preventDefault();event.stopPropagation()}
+  const node=document.getElementById("hnode-"+id);
+  if(!node)return;
+  const children=node.querySelector(":scope > ul");
+  if(!children)return;
+  children.style.display=children.style.display==="none"?"flex":"none";
+}
+
 function expandTree(){
   currentView="full";
   currentBranchId="";
@@ -694,16 +831,18 @@ function expandTree(){
     return;
   }
 
-  document.getElementById("workspace")
-    .innerHTML=fullTree();
+  const workspace=document.getElementById("workspace");
+  workspace.classList.toggle("horizontal-mode",currentTreeLayout==="horizontal");
+  workspace.innerHTML=currentTreeLayout==="horizontal"?horizontalFullTree():fullTree();
 }
 
 function collapseTree(){
   currentView="blank";
   currentBranchId="";
 
-  document.getElementById("workspace")
-    .innerHTML='<div class="blank"></div>';
+  const workspace=document.getElementById("workspace");
+  workspace.classList.remove("horizontal-mode");
+  workspace.innerHTML='<div class="blank"></div>';
 
   document.getElementById("searchBox")
     .value="";
