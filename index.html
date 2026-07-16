@@ -143,17 +143,231 @@
 @media(max-width:700px){.member-summary{grid-template-columns:1fr}}
 
 
-/* Wider desktop form popup */
-@media(min-width:821px){
-  .dialog{
-    width:min(94vw,1120px);
-    max-width:1120px;
-    height:92vh;
+/* Version 2 public UI */
+.main{
+  min-width:0;
+  padding:20px;
+}
+
+.workspace{
+  min-width:0;
+  width:100%;
+}
+
+.person,
+.org-card{
+  position:relative;
+}
+
+.profile-link{
+  display:block;
+  width:100%;
+  margin-top:7px;
+  padding:5px 8px;
+  border:1px solid rgba(18,56,199,.24);
+  border-radius:7px;
+  background:#f4f7ff;
+  color:#1238c7;
+  font-size:11px;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.profile-modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:2100;
+  padding:20px;
+  background:rgba(0,0,0,.6);
+  overflow:auto;
+}
+
+.profile-modal.open{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.profile-card{
+  position:relative;
+  width:min(94vw,560px);
+  max-height:92vh;
+  overflow:auto;
+  padding:26px;
+  border-radius:16px;
+  background:#fff;
+  box-shadow:0 18px 48px rgba(0,0,0,.3);
+}
+
+.profile-close{
+  position:absolute;
+  top:10px;
+  right:12px;
+  width:40px;
+  height:40px;
+  border:0;
+  border-radius:50%;
+  background:#eef2ff;
+  color:#1238c7;
+  font-size:28px;
+  cursor:pointer;
+}
+
+.profile-heading{
+  color:#1238c7;
+  font-size:.8rem;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.09em;
+}
+
+.profile-card h2{
+  margin:6px 44px 18px 0;
+  font-size:1.7rem;
+}
+
+.profile-details{
+  margin:0;
+  display:grid;
+  gap:10px;
+}
+
+.profile-details > div{
+  display:grid;
+  grid-template-columns:1fr 1.2fr;
+  gap:12px;
+  padding:10px 0;
+  border-bottom:1px solid #e5e7ef;
+}
+
+.profile-details dt{
+  font-weight:700;
+  color:#50576b;
+}
+
+.profile-details dd{
+  margin:0;
+  text-align:right;
+}
+
+.profile-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:20px;
+}
+
+.profile-actions button{
+  min-height:44px;
+  border:1px solid #1238c7;
+  border-radius:9px;
+  background:#fff;
+  color:#1238c7;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.profile-actions button:first-child{
+  background:#1238c7;
+  color:#fff;
+}
+
+.profile-privacy{
+  margin:16px 0 0;
+  color:#667085;
+  font-size:.78rem;
+  line-height:1.4;
+}
+
+@media(max-width:700px){
+  .main{
+    padding:12px 8px 28px;
   }
 
-  iframe{
-    width:100%;
-    height:100%;
+  .profile-modal{
+    padding:0;
+  }
+
+  .profile-card{
+    width:100vw;
+    max-height:100dvh;
+    min-height:100vh;
+    border-radius:0;
+    padding:22px 16px calc(26px + env(safe-area-inset-bottom));
+  }
+
+  .profile-details > div{
+    grid-template-columns:1fr;
+    gap:4px;
+  }
+
+  .profile-details dd{
+    text-align:left;
+  }
+
+  .profile-actions{
+    grid-template-columns:1fr;
+  }
+}
+
+
+.home-heading{
+  margin-bottom:18px;
+  padding:20px 18px;
+  text-align:center;
+  border-radius:14px;
+  background:linear-gradient(180deg,#1238c7,#081b73);
+  color:#fff;
+  box-shadow:0 5px 18px rgba(8,27,115,.2);
+}
+
+.home-heading h1{
+  margin:0;
+  font-size:clamp(1.55rem,4vw,2.6rem);
+  line-height:1.1;
+  letter-spacing:.035em;
+}
+
+.home-tagline{
+  margin:12px 0 15px;
+  font-size:clamp(1rem,2.5vw,1.25rem);
+  line-height:1.45;
+  font-weight:700;
+}
+
+.home-member-total{
+  display:flex;
+  align-items:baseline;
+  justify-content:center;
+  gap:8px;
+  margin-top:8px;
+}
+
+.home-member-total strong{
+  font-size:clamp(1.65rem,4vw,2.25rem);
+}
+
+.home-member-total span{
+  font-size:1rem;
+  font-weight:700;
+}
+
+.home-quote-title{
+  margin-top:18px;
+  padding-top:14px;
+  border-top:1px solid rgba(255,255,255,.35);
+  font-size:.82rem;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+}
+
+@media(max-width:700px){
+  .home-heading{
+    margin-left:0;
+    margin-right:0;
+    padding:18px 12px;
   }
 }
 
@@ -178,6 +392,20 @@
 >
   Open Branch
 </button><div class="label">Search Name</div><input id="searchBox" placeholder="Search name" oninput="searchTree()"><div class="label">Connections</div><div style="padding:0 14px 12px;font-size:.78rem;line-height:1.35;color:rgba(255,255,255,.82)">Each sponsor branch has its own line color.</div><div class="label">Tree</div><button class="tile" onclick="expandTree()">Expand Tree</button><button class="tile" onclick="collapseTree()">Collapse Tree</button><button class="tile" onclick="window.print()">Print / Save PDF</button></aside><main class="main">
+      <section class="home-heading" aria-label="No Matter What Family Tree home">
+        <h1>NO MATTER WHAT FAMILY TREE</h1>
+        <p class="home-tagline">
+          Connecting Recovery<br>
+          One Member at a Time
+        </p>
+
+        <div class="home-member-total">
+          <strong id="homeMemberCount">0</strong>
+          <span>Members Connected</span>
+        </div>
+
+        <div class="home-quote-title">Quote of the Day</div>
+      </section>
       <section class="member-summary" aria-label="Family tree member counts">
         <div class="summary-card">
           <span class="summary-label">Total Members</span>
@@ -209,6 +437,59 @@
         </button>
       </section>
     </main></div>
+
+<div id="profileModal" class="profile-modal" aria-hidden="true">
+  <section class="profile-card" role="dialog" aria-modal="true" aria-labelledby="profileName">
+    <button
+      type="button"
+      class="profile-close"
+      onclick="closeMemberProfile()"
+      aria-label="Close member profile"
+    >
+      &times;
+    </button>
+
+    <div class="profile-heading">Member Profile</div>
+    <h2 id="profileName"></h2>
+
+    <dl class="profile-details">
+      <div>
+        <dt>Clean date</dt>
+        <dd id="profileCleanDate"></dd>
+      </div>
+      <div>
+        <dt>Years clean</dt>
+        <dd id="profileYearsClean"></dd>
+      </div>
+      <div>
+        <dt>Sponsor</dt>
+        <dd id="profileSponsor"></dd>
+      </div>
+      <div>
+        <dt>Direct sponsees</dt>
+        <dd id="profileDirectSponsees"></dd>
+      </div>
+      <div>
+        <dt>Total connected below</dt>
+        <dd id="profileDescendants"></dd>
+      </div>
+    </dl>
+
+    <div class="profile-actions">
+      <button type="button" onclick="openProfileBranch()">
+        View Branch
+      </button>
+      <button type="button" onclick="closeMemberProfile()">
+        Close
+      </button>
+    </div>
+
+    <p class="profile-privacy">
+      Public profile information only. Phone numbers and email addresses remain private.
+    </p>
+  </section>
+</div>
+
 <div id="modal" class="modal"><div class="dialog"><button class="close" onclick="closeForm()">&times;</button><iframe id="formFrame"></iframe></div></div>
 <script>
 const FORM_WEB_APP_URL="https://script.google.com/macros/s/AKfycbymQT3RB_HJWm1By9SJqgEbydhPuE72wf_mBtabWFTDUCxKnOxQOYaBBr1FduIYZj28eg/exec";
@@ -228,6 +509,7 @@ let treeDataDirty=false;
 let allBranchSponsors=[];
 let pendingBranchSponsorName="";
 let currentTreeLayout="vertical";
+let activeProfileMemberId="";
 
 const BRANCH_COLORS=[
   "#d62828",
@@ -538,6 +820,101 @@ function colorForSponsor(id){
 }
 
 
+
+function yearsCleanFromDate(value){
+  const parts=String(value||"").split("/");
+
+  if(parts.length!==3){
+    return "—";
+  }
+
+  const month=Number(parts[0]);
+  const day=Number(parts[1]);
+  const year=Number(parts[2]);
+
+  if(!month||!day||!year){
+    return "—";
+  }
+
+  const now=new Date();
+  let years=now.getFullYear()-year;
+
+  const anniversaryPassed=
+    now.getMonth()+1>month ||
+    (
+      now.getMonth()+1===month &&
+      now.getDate()>=day
+    );
+
+  if(!anniversaryPassed){
+    years-=1;
+  }
+
+  return Math.max(0,years);
+}
+
+function openMemberProfile(event,id){
+  if(event){
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  const person=byId[id];
+
+  if(!person){
+    return;
+  }
+
+  activeProfileMemberId=id;
+
+  const sponsor=
+    person.sponsor_id && byId[person.sponsor_id]
+      ? byId[person.sponsor_id].name
+      : "Not listed";
+
+  document.getElementById("profileName").textContent=
+    person.name;
+
+  document.getElementById("profileCleanDate").textContent=
+    person.clean_date||"Not listed";
+
+  document.getElementById("profileYearsClean").textContent=
+    yearsCleanFromDate(person.clean_date);
+
+  document.getElementById("profileSponsor").textContent=
+    sponsor;
+
+  document.getElementById("profileDirectSponsees").textContent=
+    (DATA.children[id]||[]).length;
+
+  document.getElementById("profileDescendants").textContent=
+    descendantCount(id);
+
+  const modal=document.getElementById("profileModal");
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden","false");
+}
+
+function closeMemberProfile(){
+  const modal=document.getElementById("profileModal");
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden","true");
+}
+
+function openProfileBranch(){
+  const id=activeProfileMemberId;
+
+  if(!id){
+    return;
+  }
+
+  closeMemberProfile();
+  currentView="branch";
+  currentBranchId=id;
+  document.getElementById("branchSelect").value=id;
+  renderImmediateBranch(id,true);
+}
+
 function descendantCount(id){
   const children=DATA.children[id]||[];
   let total=children.length;
@@ -553,6 +930,14 @@ function updateMemberCounters(selectedSponsorId){
 
   if(totalElement){
     totalElement.textContent=DATA.people.length;
+  }
+
+  const homeTotalElement=
+    document.getElementById("homeMemberCount");
+
+  if(homeTotalElement){
+    homeTotalElement.textContent=
+      DATA.people.length;
   }
 
   if(!branchElement){
@@ -609,6 +994,13 @@ function personCard(
           ? `<div class="descendant-count">${descendantCount(id)} connected below</div>`
           : ""
       }
+      <button
+        type="button"
+        class="profile-link"
+        onclick="openMemberProfile(event,'${id}')"
+      >
+        View Profile
+      </button>
     </div>
   `;
 }
@@ -853,6 +1245,13 @@ function orgCard(id,incomingColor){
         ? `<div class="descendant-count">${descendantCount(id)} connected below</div>`
         : ""
     }
+    <button
+      type="button"
+      class="profile-link"
+      onclick="openMemberProfile(event,'${id}')"
+    >
+      View Profile
+    </button>
   </div>`;
 }
 
@@ -1194,6 +1593,14 @@ function loadCurrentTreeData(){
 
   document.body.appendChild(script);
 }
+
+document
+  .getElementById("profileModal")
+  .addEventListener("click",function(event){
+    if(event.target.id==="profileModal"){
+      closeMemberProfile();
+    }
+  });
 
 document
   .getElementById("modal")
