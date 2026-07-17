@@ -371,6 +371,14 @@
   }
 }
 
+
+/* Version 2.1 */
+.quote-panel{margin:12px auto 0;padding:12px 52px;min-height:58px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;box-shadow:none}
+.quote-text{margin:0;text-align:center;color:#fff}.quote-nav{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;border:1px solid rgba(255,255,255,.65);border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:22px;cursor:pointer}.quote-prev{left:8px}.quote-next{right:8px}
+.menu-restore{display:none;position:fixed;left:10px;top:10px;z-index:50;width:44px;height:44px;border:0;border-radius:50%;background:var(--blue);color:#fff;font-size:23px;box-shadow:0 3px 12px rgba(0,0,0,.22)}
+@media(min-width:821px){body.menu-hidden #app{grid-template-columns:1fr}body.menu-hidden .sidebar{display:none}body.menu-hidden .menu-restore{display:block}body.menu-hidden .main{padding-left:66px}}
+@media(max-width:820px){.desktop-only{display:none!important}.quote-panel{padding:11px 46px}.quote-text{font-size:1rem}}
+
 </style></head><body>
 <div id="splash"><div class="orbit"><div class="ring"></div><div class="splash-title">NO MATTER WHAT<br>FAMILY TREE</div><button class="enter" onclick="enterSite()">Enter</button></div></div>
 <div id="app"><aside class="sidebar"><div class="brand">No Matter What<br>Family Tree</div><div class="label">Members</div><button class="tile" onclick="openForm('add')">Add Member</button><button class="tile" onclick="openForm('update')">Update Member</button><button class="tile" onclick="openForm('delete')">Delete Member</button><button class="tile" onclick="openForm('lists')">Request Lists</button><div class="label">Branch Sponsor</div>
@@ -391,7 +399,7 @@
   onclick="showBranch()"
 >
   Open Branch
-</button><div class="label">Search Name</div><input id="searchBox" placeholder="Search name" oninput="searchTree()"><div class="label">Connections</div><div style="padding:0 14px 12px;font-size:.78rem;line-height:1.35;color:rgba(255,255,255,.82)">Each sponsor branch has its own line color.</div><div class="label">Tree</div><button class="tile" onclick="expandTree()">Expand Tree</button><button class="tile" onclick="collapseTree()">Collapse Tree</button><button class="tile" onclick="window.print()">Print / Save PDF</button></aside><main class="main">
+</button><div class="label">Search Name</div><input id="searchBox" placeholder="Search name" oninput="searchTree()"><div class="label">Connections</div><div style="padding:0 14px 12px;font-size:.78rem;line-height:1.35;color:rgba(255,255,255,.82)">Each sponsor branch has its own line color.</div><div class="label">Tree</div><button class="tile" onclick="expandTree()">Expand Tree</button><button class="tile" onclick="collapseTree()">Collapse Tree</button><button class="tile" onclick="window.print()">Print / Save PDF</button><button class="tile desktop-only" type="button" onclick="toggleDesktopMenu()">Hide Menu</button></aside><button id="menuRestore" class="menu-restore desktop-only" type="button" onclick="toggleDesktopMenu()" aria-label="Show menu">&#9776;</button><main class="main">
       <section class="home-heading" aria-label="No Matter What Family Tree home">
         <h1>NO MATTER WHAT FAMILY TREE</h1>
         <p class="home-tagline">
@@ -405,6 +413,11 @@
         </div>
 
         <div class="home-quote-title">Quote of the Day</div>
+        <section class="quote-panel" aria-label="Daily quote">
+          <button class="quote-nav quote-prev" type="button" onclick="retreatQuote()" aria-label="Previous quote">&#8592;</button>
+          <p id="dailyQuote" class="quote-text"></p>
+          <button class="quote-nav quote-next" type="button" onclick="advanceQuote()" aria-label="Next quote">&#8594;</button>
+        </section>
       </section>
       <section class="member-summary" aria-label="Family tree member counts">
         <div class="summary-card">
@@ -423,19 +436,6 @@
       <div id="workspace" class="workspace">
         <div class="blank"></div>
       </div>
-
-      <section class="quote-panel" aria-label="Daily quote">
-        <p id="dailyQuote" class="quote-text"></p>
-        <button
-          class="quote-next"
-          type="button"
-          onclick="advanceQuote()"
-          aria-label="Next quote"
-          title="Next quote"
-        >
-          &#8594;
-        </button>
-      </section>
     </main></div>
 
 <div id="profileModal" class="profile-modal" aria-hidden="true">
@@ -568,6 +568,11 @@ function showQuote(index){
 
 function advanceQuote(){
   showQuote(displayedQuoteIndex+1);
+}
+function retreatQuote(){showQuote(displayedQuoteIndex-1)}
+function toggleDesktopMenu(){
+  const hidden=document.body.classList.toggle("menu-hidden");
+  localStorage.setItem("familyTreeMenuHidden",hidden?"1":"0");
 }
 
 
@@ -1633,6 +1638,7 @@ window.addEventListener(
   }
 );
 
+if(localStorage.getItem("familyTreeMenuHidden")==="1"){document.body.classList.add("menu-hidden")}
 bindBranchSponsorControls();
 showQuote(dailyQuoteIndex());
 collapseTree();
