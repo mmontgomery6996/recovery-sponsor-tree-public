@@ -1478,12 +1478,16 @@ function filterBranchSponsors(){
 
   renderBranchOptions(filtered);
 
-  /*
-   * Do not automatically select the only match.
-   * On mobile, tapping an already selected item does not fire
-   * another change event.
-   */
-  document.getElementById("branchSelect").value="";
+  const select=document.getElementById("branchSelect");
+
+  if(filtered.length===1){
+    select.value=filtered[0].id;
+  }else{
+    const exactMatch=filtered.find(function(person){
+      return person.name.toLowerCase()===query;
+    });
+    select.value=exactMatch?exactMatch.id:"";
+  }
 }
 
 function bindBranchSponsorControls(){
