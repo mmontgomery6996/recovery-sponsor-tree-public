@@ -405,7 +405,7 @@
   type="button"
   onclick="showBranch()"
 >
-  Open Branch
+  Go
 </button><div class="label">Search Name</div><input id="searchBox" placeholder="Search name" oninput="searchTree()"><div class="label">Connections</div><div style="padding:0 14px 12px;font-size:.78rem;line-height:1.35;color:rgba(255,255,255,.82)">Each sponsor branch has its own line color.</div><div class="label">Tree</div><button class="tile" onclick="expandTree()">Expand Tree</button><button class="tile" onclick="collapseTree()">Collapse Tree</button><button class="tile" onclick="window.print()">Print / Save PDF</button><div class="label member-actions-label">Members</div><button class="tile" onclick="openForm('add')">Add Member</button><button class="tile" onclick="openForm('update')">Update Member</button><button class="tile" onclick="openForm('delete')">Delete Member</button><button class="tile" onclick="openForm('lists')">Request Lists</button><button class="tile desktop-only" type="button" onclick="toggleDesktopMenu()">Hide Menu</button></aside><button id="menuRestore" class="menu-restore desktop-only" type="button" onclick="toggleDesktopMenu()" aria-label="Show menu">&#9776;</button><main class="main">
       <section class="home-heading" aria-label="No Matter What Family Tree home">
         <h1>NO MATTER WHAT FAMILY TREE</h1>
@@ -1360,7 +1360,7 @@ function showBranch(){
   if(!id){
     document.getElementById("workspace")
       .innerHTML=
-        '<p style="padding:12px">Select a Branch Sponsor, then tap Open Branch.</p>';
+        '<p style="padding:12px">Select a Branch Sponsor, then tap Go.</p>';
     return;
   }
 
@@ -1496,15 +1496,6 @@ function bindBranchSponsorControls(){
 
   const input=
     document.getElementById("branchFilter");
-
-  select.addEventListener(
-    "change",
-    function(){
-      if(select.value){
-        showBranch();
-      }
-    }
-  );
 
   input.addEventListener(
     "keydown",
