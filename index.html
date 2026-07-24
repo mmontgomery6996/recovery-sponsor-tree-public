@@ -253,7 +253,7 @@
 
 .profile-actions{
   display:grid;
-  grid-template-columns:1fr 1fr;
+  grid-template-columns:1fr;
   gap:10px;
   margin-top:20px;
 }
@@ -411,11 +411,6 @@
 </button><div class="label">Search Name</div><input id="searchBox" placeholder="Search name" oninput="searchTree()"><div class="label">Connections</div><div style="padding:0 14px 12px;font-size:.78rem;line-height:1.35;color:rgba(255,255,255,.82)">Each sponsor branch has its own line color.</div><div class="label">Tree</div><button class="tile" onclick="expandTree()">Expand Tree</button><button class="tile" onclick="collapseTree()">Collapse Tree</button><button class="tile" onclick="window.print()">Print / Save PDF</button><div class="label member-actions-label">Members</div><button class="tile" onclick="openForm('add')">Add Member</button><button class="tile" onclick="openForm('update')">Update Member</button><button class="tile" onclick="openForm('delete')">Delete Member</button><button class="tile" onclick="openForm('lists')">Request Lists</button><button class="tile desktop-only" type="button" onclick="toggleDesktopMenu()">Hide Menu</button></aside><button id="menuRestore" class="menu-restore desktop-only" type="button" onclick="toggleDesktopMenu()" aria-label="Show menu">&#9776;</button><main class="main">
       <section class="home-heading" aria-label="No Matter What Family Tree home">
         <h1>NO MATTER WHAT FAMILY TREE</h1>
-        <p class="home-tagline">
-          Connecting Recovery<br>
-          One Member at a Time
-        </p>
-
         <div class="home-member-total">
           <strong id="homeMemberCount">0</strong>
           <span>Members Connected</span>
@@ -480,9 +475,6 @@
     </dl>
 
     <div class="profile-actions">
-      <button type="button" onclick="openProfileBranch()">
-        View Branch
-      </button>
       <button type="button" onclick="closeMemberProfile()">
         Close
       </button>
@@ -1166,50 +1158,43 @@ function toggleSponsorTile(event,id){
     event.stopPropagation();
   }
 
-  const node=currentTreeLayout==="horizontal"?document.getElementById("hnode-"+id):document.getElementById("node-"+id);
+  const node=document.getElementById("node-"+id);
 
   if(!node || !node.classList.contains("has-children")){
     return;
   }
 
-  const isSelectedRoot=
-    node.classList.contains("selected-root");
-
-  const branchSponsors=[
-    node,
+  const descendants=[
     ...node.querySelectorAll(
       ".tree-node.has-children"
     )
   ];
 
-  if(isSelectedRoot){
-    const descendants=branchSponsors.slice(1);
-    const allDescendantsOpen=
-      descendants.length>0 &&
-      descendants.every(function(item){
-        return item.classList.contains("open");
-      });
-
-    node.classList.add("open");
-
-    descendants.forEach(function(item){
-      item.classList.toggle(
-        "open",
-        !allDescendantsOpen
-      );
+  const isOpen=node.classList.contains("open");
+  const allDescendantsOpen=
+    descendants.length===0 ||
+    descendants.every(function(item){
+      return item.classList.contains("open");
     });
 
+  if(!isOpen){
+    node.classList.add("open");
+    descendants.forEach(function(item){
+      item.classList.remove("open");
+    });
     return;
   }
 
-  const shouldOpen=
-    !node.classList.contains("open");
+  if(!allDescendantsOpen){
+    descendants.forEach(function(item){
+      item.classList.add("open");
+    });
+    return;
+  }
 
-  branchSponsors.forEach(function(item){
-    item.classList.toggle(
-      "open",
-      shouldOpen
-    );
+  node.classList.remove("open");
+  descendants.forEach(function(item){
+    item.classList.remove("open");
   });
 }
 
@@ -1278,14 +1263,16 @@ function orgCard(id,incomingColor){
   </div>`;
 }
 
-function horizontalNode(id,incomingColor="#5b6f82"){
+function horizontalNode(id,incomingColor="#5b6f82",openMode="closed"){
   const kids=DATA.children[id]||[];
   const color=colorForSponsor(id);
-  return `<li id="hnode-${id}" class="horizontal-node">${orgCard(id,incomingColor)}${kids.length?`<ul style="--branch-color:${color}">${kids.map(child=>horizontalNode(child,color)).join("")}</ul>`:""}</li>`;
+  const childDisplay=openMode==="closed"?"none":"flex";
+  const descendantMode=openMode==="all"?"all":"closed";
+  return `<li id="hnode-${id}" class="horizontal-node">${orgCard(id,incomingColor)}${kids.length?`<ul style="--branch-color:${color};display:${childDisplay}">${kids.map(child=>horizontalNode(child,color,descendantMode)).join("")}</ul>`:""}</li>`;
 }
 
 function horizontalFullTree(){
-  return DATA.root?`<div class="org-chart"><ul>${horizontalNode(DATA.root)}</ul></div>`:"";
+  return DATA.root?`<div class="org-chart"><ul>${horizontalNode(DATA.root,"#5b6f82","all")}</ul></div>`:"";
 }
 
 function horizontalBranchTree(id){
@@ -1302,7 +1289,7 @@ function horizontalBranchTree(id){
       const kids=DATA.children[id]||[];
       if(kids.length){
         const color=colorForSponsor(id);
-        h+=`<ul style="--branch-color:${color}">${kids.map(child=>horizontalNode(child,color)).join("")}</ul>`;
+        h+=`<ul style="--branch-color:${color};display:flex">${kids.map(child=>horizontalNode(child,color,"closed")).join("")}</ul>`;
       }
     }
   }
@@ -1314,12 +1301,51 @@ function horizontalBranchTree(id){
 }
 
 function toggleHorizontalNode(event,id){
-  if(event){event.preventDefault();event.stopPropagation()}
+  if(event){
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
   const node=document.getElementById("hnode-"+id);
-  if(!node)return;
+  if(!node){
+    return;
+  }
+
   const children=node.querySelector(":scope > ul");
-  if(!children)return;
-  children.style.display=children.style.display==="none"?"flex":"none";
+  if(!children){
+    return;
+  }
+
+  const descendantLists=[
+    ...node.querySelectorAll(".horizontal-node > ul")
+  ];
+
+  const isOpen=children.style.display!=="none";
+  const allDescendantsOpen=
+    descendantLists.length===0 ||
+    descendantLists.every(function(list){
+      return list.style.display!=="none";
+    });
+
+  if(!isOpen){
+    children.style.display="flex";
+    descendantLists.forEach(function(list){
+      list.style.display="none";
+    });
+    return;
+  }
+
+  if(!allDescendantsOpen){
+    descendantLists.forEach(function(list){
+      list.style.display="flex";
+    });
+    return;
+  }
+
+  children.style.display="none";
+  descendantLists.forEach(function(list){
+    list.style.display="none";
+  });
 }
 
 function expandTree(){
